@@ -1,0 +1,10 @@
+extends layout.pug 
+
+block content 
+    .container 
+        .row.text-center.mb-4
+            .col
+                h1 #{user.first_name}'s dashboard
+    .container 
+        .row 
+            a.btn.btn-primary.btn-sm(href='/admin/users') users

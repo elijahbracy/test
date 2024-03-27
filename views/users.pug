@@ -1,0 +1,30 @@
+extends layout.pug
+
+block content
+    h1 All Users
+    table.table.table-striped
+        thead
+            tr
+                th First Name
+                th Last Name
+                th Email
+                th Admin
+                th Actions
+        tbody
+            each user in users
+                tr
+                    td= user.first_name
+                    td= user.last_name
+                    td= user.email
+                    td= user.isAdmin ? 'Yes' : 'No'
+                    td
+                        form(action="/users/delete", method="post" style="display: inline;")
+                            input(type="hidden" name="userId" value=user.id)
+                            button.btn.btn-danger(type="submit") Delete
+                        form(action="/users/edit", method="get" style="display: inline;")
+                            input(type="hidden" name="userId" value=user.id)
+                            button.btn.btn-primary(type="submit") Edit
+                        if !user.isAdmin
+                            form(action="/admin/users/make-admin", method="post" style="display: inline;")
+                                input(type="hidden" name="userId" value=user.user_id)
+                                button.btn.btn-success(type="submit") Make Admin

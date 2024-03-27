@@ -1,0 +1,21 @@
+extends layout.pug
+
+block content
+    // Row for the title
+    .container
+        .row.text-center.mb-4
+            .col
+                h1 RCNJ Film Student Spotlight
+
+    // Row for the videos
+    .container
+        .row
+            if videos.length
+                each video in videos
+                    .col-4
+                        a(href=video.url)
+                            img(src=video.thumbnailUrl, alt=video.title, class='img-thumbnail')
+                            p= video.title
+            else 
+                p Check out our youtube channel!
+                a(href="https://www.youtube.com/@RcnjArchTalk" target="_blank") Visit our YouTube channel for more videos.
