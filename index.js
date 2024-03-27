@@ -1,5 +1,6 @@
 const express = require('express');
 const session = require('express-session');
+const bodyParser = require('body-parser');
 require('dotenv').config();
 const authRoutes = require('./routes/auth-routes');
 const profileRoutes = require('./routes/profile-routes');
@@ -18,6 +19,9 @@ app.locals.pretty = true;
 
 // Serve static files from the public directory
 app.use(express.static('public'));
+
+// use body parsing middleware
+app.use(bodyParser.json());
 
 app.use(express.urlencoded({ extended: true }));
 app.set('view engine', 'pug');

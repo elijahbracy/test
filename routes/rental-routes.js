@@ -1,3 +1,5 @@
+const db = require('../db');
+
 const router = require('express').Router();
 
 // middleware function to check if the user is authenticated
@@ -10,8 +12,10 @@ const authCheck = (req, res, next) => {
     }
 };
 
-router.get('/', (req, res) => {
-    res.render('rentals', { user: req.user, equipmentOptions: [] });
+router.get('/', async (req, res) => {
+    //const equipment = await db.getAvailableEquipment();
+    const cameras = ['blackmagic', 'gh5'];
+    res.render('rentals', { user: req.user, equipmentOptions: cameras});
 });
 
 

@@ -32,31 +32,51 @@ router.get('/', adminCheck, (req, res) => {
 
 
 router.get('/users', adminCheck, async (req,res) => {
+    res.render('users', {user: req.user});
+});
+
+router.get('/getUsers', adminCheck, async (req,res) => {
     try {
         const users = await db.getAllUsers();
 
-        res.render('users', {user: req.user, users});
+        res.json({ users: users});
     } catch (err) {
         console.error('error fetching users:', err);
         res.status(500).send('Interal Server Error');
     }
 });
 
-router.post('/users/make-admin', adminCheck, async (req, res) => {
-    const userId = req.body.userId; // Assuming the user ID is sent in the request body
-    console.log('userId', userId);
+router.post('/users/:id', adminCheck, async (req, res) => {
     try {
-        // Update user's status to be an admin in the database
-        await db.makeUserAdmin(userId);
+        const userId = req.params.id;
+        const user = await db.getUserById(userId);
 
-        // Redirect the user back to the users list page or respond with a success message
-        res.redirect('/admin/users');
+        if (!user) {
+            // Handle case where user is not found
+            return res.status(404).send('User not found');
+        }
+
+        if (user.isAdmin) {
+            // User is currently an admin, remove admin status
+            await db.removeUserAdmin(userId);
+            res.status(200).send('User removed as admin');
+        } else {
+            // User is not an admin, make them an admin
+            await db.makeUserAdmin(userId);
+            res.status(200).send('User made admin');
+        }
     } catch (error) {
         // Handle errors appropriately (e.g., show an error message)
-        console.error('Error making user admin:', error);
-        res.status(500).send('An error occurred while making the user admin.');
+        console.error('Error updating user admin status:', error);
+        res.status(500).send('An error occurred while updating user admin status.');
     }
 });
+
+
+router.delete('/users/:id', async (req, res) => {
+    await db.deleteUser(req.params.id);
+    res.status(200).send();
+})
 
 //router.get('/equipment', adminCheck, ())
 

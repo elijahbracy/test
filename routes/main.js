@@ -48,11 +48,11 @@ async function fetchYouTubeVideos() {
 router.get('/', async (req, res) => {
     try {
         //const user = req.user;
-        //const videos = await fetchYouTubeVideos();
+        const videos = await fetchYouTubeVideos();
         //console.log(videos);
-        //res.render('main', { videos: videos, user: req.user });
+        res.render('main', { videos: videos, user: req.user });
         console.log(req.user);
-        res.render('main', { videos: [], user: req.user });
+        //res.render('main', { videos: [], user: req.user });
     } catch (error) {
         console.error('Error rendering main page:', error);
         res.render('main', { videos: [], user: req.user, error: error });

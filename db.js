@@ -198,6 +198,27 @@ class CageDB {
             throw error; // Throw any errors encountered
         }
     }
+
+    async deleteUser(userId) {
+        try {
+            // Execute the delete operation using Knex.js
+            const deletedCount = await this.knex('Users')
+                .where({ user_id: userId })
+                .del();
+    
+            if (deletedCount === 0) {
+                // Handle case where user was not found
+                throw new Error('User not found');
+            }
+    
+            // User successfully deleted
+            return { success: true, message: 'User deleted successfully' };
+        } catch (error) {
+            // Handle any errors that occurred during the deletion process
+            console.error('Error deleting user:', error);
+            throw error; // Rethrow the error to be handled by the caller
+        }
+    }
     
     async getAllUsers() {
         try {
@@ -229,6 +250,20 @@ class CageDB {
         try {
             // Assuming you have a method to update the user's isAdmin status in your database
             await this.updateUserById(userId, { isAdmin: true });
+            
+            // Return a success message or handle the result as needed
+            return 'User has been made an admin successfully.';
+        } catch (error) {
+            // Handle any errors that occur during the database operation
+            console.error('Error making user admin:', error);
+            throw error; // Rethrow the error to be handled by the calling function
+        }
+    }
+
+    async removeUserAdmin(userId) {
+        try {
+            // Assuming you have a method to update the user's isAdmin status in your database
+            await this.updateUserById(userId, { isAdmin: false });
             
             // Return a success message or handle the result as needed
             return 'User has been made an admin successfully.';
