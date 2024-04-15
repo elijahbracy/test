@@ -1,0 +1,14 @@
+extends layout.pug 
+
+block content 
+    script(src="/javascripts/admin-routes.js")
+    h1 Equipment
+    table.table.table-striped
+        thead
+            tr
+                th Name
+                th Quantity
+                th Available
+        tbody
+            script. 
+                loadEquipment()

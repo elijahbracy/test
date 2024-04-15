@@ -8,8 +8,6 @@ const toggleAdmin = async (id) => {
     await loadUsers();
 }
 
-
-
 const loadUsers = async () => {
     const response = await axios.get('/admin/getUsers');
     const tbody = document.querySelector('tbody');
@@ -34,6 +32,29 @@ const loadUsers = async () => {
                 <td>
                     ${makeAdminButton}
                     ${removeAdminButton}
+                </td>
+            `;
+            tbody.appendChild(tr);
+        }
+        
+    }
+}
+
+const loadEquipment = async () => {
+    const response = await axios.get('/admin/getEquipment');
+    const tbody = document.querySelector('tbody');
+    while (tbody.firstChild) {
+        tbody.removeChild(tbody.firstChild);
+    }
+
+    if (response && response.data && response.data.equipment) {
+        for (const equipment of response.data.equipment) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${equipment.name}</td>
+                <td>${equipment.quantity}</td>
+                <td>
+                    <button class='btn btn-danger' onclick='deleteUser(${user.user_id})'>Delete</button>
                 </td>
             `;
             tbody.appendChild(tr);

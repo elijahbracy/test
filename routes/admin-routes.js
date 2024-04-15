@@ -78,6 +78,19 @@ router.delete('/users/:id', async (req, res) => {
     res.status(200).send();
 })
 
-//router.get('/equipment', adminCheck, ())
+router.get('/equipment', adminCheck, async (req, res) => {
+    res.render('equipment', {user: req.user});
+})
+
+router.get('/getEquipment', adminCheck, async (req,res) => {
+    try {
+        const equipment = await db.getEquipment();
+
+        res.json({ equipment: equipment});
+    } catch (err) {
+        console.error('error fetching users:', err);
+        res.status(500).send('Interal Server Error');
+    }
+});
 
 module.exports = router;
