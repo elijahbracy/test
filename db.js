@@ -82,46 +82,43 @@ class CageDB {
                 }
             }
             
-
-        
-        const availabilityDecrementTrigger = await checkTriggerExists('decrement_availability_insert');
-
-        if (!availabilityDecrementTrigger) {
-            await knex.raw(`
-                CREATE OR REPLACE FUNCTION decrement_availability_trigger_function()
-                RETURNS TRIGGER AS $$
-                BEGIN
-                    IF TG_OP = 'INSERT' THEN
-                        IF NEW.rental_status = 'approved' OR NEW.rental_status = 'in progress' THEN
-                            UPDATE "Availability" 
-                            SET available_quantity = available_quantity - 1
-                            WHERE equipment_id = NEW.equipment_id;
+            const availabilityDecrementTrigger = await checkTriggerExists('decrement_availability_trigger');
+            
+            if (!availabilityDecrementTrigger) {
+                await knex.raw(`
+                    CREATE OR REPLACE FUNCTION decrement_availability_trigger_function()
+                    RETURNS TRIGGER AS $$
+                    BEGIN
+                        IF TG_OP = 'INSERT' THEN
+                            IF NEW.rental_status = 'approved' OR NEW.rental_status = 'in progress' THEN
+                                UPDATE "Availability" 
+                                SET available_quantity = available_quantity - 1
+                                WHERE equipment_id = NEW.equipment_id;
+                            END IF;
+                        ELSIF TG_OP = 'UPDATE' THEN
+                            IF NEW.rental_status = 'approved' AND OLD.rental_status <> 'approved' THEN
+                                UPDATE "Availability" 
+                                SET available_quantity = available_quantity - 1
+                                WHERE equipment_id = NEW.equipment_id;
+                            ELSIF NEW.rental_status = 'in progress' AND OLD.rental_status <> 'in progress' THEN
+                                UPDATE "Availability" 
+                                SET available_quantity = available_quantity - 1
+                                WHERE equipment_id = NEW.equipment_id;
+                            END IF;
                         END IF;
-                    ELSIF TG_OP = 'UPDATE' THEN
-                        IF NEW.rental_status = 'approved' AND OLD.rental_status <> 'approved' THEN
-                            UPDATE "Availability" 
-                            SET available_quantity = available_quantity - 1
-                            WHERE equipment_id = NEW.equipment_id;
-                        ELSIF NEW.rental_status = 'in progress' AND OLD.rental_status <> 'in progress' THEN
-                            UPDATE "Availability" 
-                            SET available_quantity = available_quantity - 1
-                            WHERE equipment_id = NEW.equipment_id;
-                        END IF;
-                    END IF;
-                    RETURN NEW;
-                END;
-                $$ LANGUAGE plpgsql;
-        
-                CREATE TRIGGER decrement_availability_trigger
-                BEFORE INSERT OR UPDATE ON "RentalEquipment"
-                FOR EACH ROW
-                EXECUTE FUNCTION decrement_availability_trigger_function();
-            `);
-        }
-        
-            // Repeat the above steps for other triggers: decrement_availability_update
+                        RETURN NEW;
+                    END;
+                    $$ LANGUAGE plpgsql;
+            
+                    CREATE TRIGGER decrement_availability_trigger
+                    BEFORE INSERT OR UPDATE ON "RentalEquipment"
+                    FOR EACH ROW
+                    EXECUTE FUNCTION decrement_availability_trigger_function();
+                `);
+            }
+            
     
-            console.log('Database initialization complete');
+        console.log('Database initialization complete');
         } catch (error) {
             console.error('Error initializing database:', error);
             throw error;
