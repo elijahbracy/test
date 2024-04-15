@@ -68,15 +68,20 @@ class CageDB {
     
             
     
-        // Check if the trigger exists
-        async function checkTriggerExists(triggerName) {
-            const [result] = await knex.raw(`
-                SELECT 1 
-                FROM information_schema.triggers 
-                WHERE trigger_name = '${triggerName}'`
-            );
-            return !!result;
-        }
+            async function checkTriggerExists(triggerName) {
+                try {
+                    const result = await knex.raw(`
+                        SELECT 1 
+                        FROM information_schema.triggers 
+                        WHERE trigger_name = '${triggerName}'
+                    `);
+                    return !!result.rows.length; // Return true if there are rows (trigger exists), false otherwise
+                } catch (error) {
+                    console.error('Error checking trigger existence:', error);
+                    throw error;
+                }
+            }
+            
 
         
         const availabilityDecrementTrigger = await checkTriggerExists('decrement_availability_insert');

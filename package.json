@@ -24,6 +24,7 @@
     "node-cache": "^5.1.2",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
+    "pg": "^8.11.5",
     "pug": "^3.0.2",
     "sqlite3": "^5.1.7"
   }
