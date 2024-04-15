@@ -18,14 +18,14 @@ const loadUsers = async () => {
     if (response && response.data && response.data.users) {
         for (const user of response.data.users) {
             const tr = document.createElement('tr');
-            const isAdmin = Boolean(user.isAdmin);
-            const makeAdminButton = isAdmin ? '' : `<button class='btn btn-success' onclick='toggleAdmin(${user.user_id})'>Make Admin</button>`;
-            const removeAdminButton = isAdmin ? `<button class='btn btn-warning' onclick='toggleAdmin(${user.user_id})'>Remove Admin</button>` : '';
+            const role = String(user.role);
+            const makeAdminButton = role === "admin" ? '' : `<button class='btn btn-success' onclick='toggleAdmin(${user.user_id})'>Make Admin</button>`;
+            const removeAdminButton = role === "admin" ? `<button class='btn btn-warning' onclick='toggleAdmin(${user.user_id})'>Remove Admin</button>` : '';
             tr.innerHTML = `
                 <td>${user.first_name}</td>
                 <td>${user.last_name}</td>
                 <td>${user.email}</td>
-                <td>${isAdmin ? 'Yes' : 'No'}</td>
+                <td>${user.role}</td>
                 <td>
                     <button class='btn btn-danger' onclick='deleteUser(${user.user_id})'>Delete</button>
                 </td>

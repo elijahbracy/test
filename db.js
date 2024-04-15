@@ -1,5 +1,5 @@
 require('dotenv').config();
-const knex = require('./config/dbConfig');
+const knex = require('./config/knexfile');
 const fs = require('fs');
 const assert = require('assert');
 const { promisify } = require('util');

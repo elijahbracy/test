@@ -28,7 +28,7 @@ html
                         a.nav-link(href='/faculty') Faculty
                     li.nav-item
                         a.nav-link(href='/contact') Contact Us
-                    if user && user.isAdmin
+                    if user && user.role === "admin"
                         li.nav-item
                             a.nav-link(href='/admin') dashboard
             ul.navbar-nav.ms-auto

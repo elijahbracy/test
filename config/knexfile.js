@@ -12,6 +12,9 @@ const knex = Knex({
         database: process.env.PGDATABASE,
         // Add other configuration options as needed
     },
+    migrations: {
+        directory: './migrations',
+    }
     // Add other Knex configuration options as needed
 });
 
