@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { google } = require('googleapis');
-const keys = require('../config/keys');
+require('dotenv').config();
 
 const NodeCache = require('node-cache');
 const cache = new NodeCache({ stdTTL: 3600 }); // Cache TTL set to 1 hour
@@ -13,7 +13,7 @@ async function fetchYouTubeVideos() {
         return cachedVideos;
     }
 
-    const apiKey = keys.google.API_KEY;
+    const apiKey = process.env.API_KEY;
     const youtube = google.youtube({ version: 'v3', auth: apiKey });
 
     try {
