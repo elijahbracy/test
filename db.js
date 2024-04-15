@@ -129,7 +129,7 @@ class CageDB {
     async getUserByEmail(email) {
         try {
             // Query the database for the user with the given email
-            const user = await this.knex('Users').where('email', '=', email).first();
+            const user = await knex('Users').where('email', '=', email).first();
     
             return user; // Return the user object
         } catch (error) {
@@ -141,7 +141,7 @@ class CageDB {
     async getUserById(id) {
         try {
             // Query the database for the user with the given ID
-            const user = await this.knex('Users').where('user_id', id).first();
+            const user = await knex('Users').where('user_id', id).first();
     
             return user; // Return the user object
         } catch (error) {
@@ -152,7 +152,7 @@ class CageDB {
     async createUser(firstName, lastName, email, sub) {
         try {
             // Insert the user into the database
-            const [userId] = await this.knex('Users').insert({
+            const userId = await knex('Users').insert({
                 first_name: firstName,
                 last_name: lastName,
                 email: email,
@@ -169,7 +169,7 @@ class CageDB {
     async deleteUser(userId) {
         try {
             // Execute the delete operation using Knex.js
-            const deletedCount = await this.knex('Users')
+            const deletedCount = await knex('Users')
                 .where({ user_id: userId })
                 .del();
     
@@ -191,7 +191,7 @@ class CageDB {
     async getAllUsers() {
         try {
             // Retrieve all users from the 'Users' table
-            const users = await this.knex('Users').select('*');
+            const users = await knex('Users').select('*');
             return users;
         } catch (error) {
             throw error;
@@ -202,7 +202,7 @@ class CageDB {
     async updateUserById(userId, updateFields) {
         try {
             // Update the user information in the database
-            await this.knex('Users')
+            await knex('Users')
                 .where('user_id', userId)
                 .update(updateFields);
     
@@ -231,7 +231,7 @@ class CageDB {
     async getEquipment() {
         try {
             // Query the database to get all equipment records
-            const equipment = await this.knex('Equipment').select('*');
+            const equipment = await knex('Equipment').select('*');
             return equipment; // Return the equipment data
         } catch (error) {
             // Handle any errors that occur during the database operation
