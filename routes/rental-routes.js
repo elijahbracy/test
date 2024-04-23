@@ -28,10 +28,13 @@ router.get('/', async (req, res) => {
 });
 
 // Handle POST request to '/rentals'
-router.post('/', async (req, res) => {
+router.post('/', authCheck, async (req, res) => {
     try {
         // Extract data from the request body
-        const { firstName, lastName, email, equipment, startDate, endDate, notes } = req.body;
+        const { firstName, lastName, email, equipment, startDate, endDate, notes, course } = req.body;
+
+        const user = await db.getUserByEmail(email);
+        console.log("user:", user);
 
         // Log the form data
         console.log('First Name:', firstName);
@@ -40,22 +43,33 @@ router.post('/', async (req, res) => {
         console.log('Selected Equipment:', equipment);
         console.log('Start Date:', startDate);
         console.log('End Date:', endDate);
+        console.log('Course: ', course);
         console.log('Additional Notes:', notes);
 
         // Insert rental information into the rental table
-        //const rentalId = await db.insertRental(firstName, lastName, email, startDate, endDate, notes);
+        const result = await db.insertRental(user.user_id, startDate, endDate, notes, course);
 
         // Insert rental equipment information into the rentalEquipment table
         console.log(req.body.equipment);
         for (const equipmentId of equipment) {
             console.log('Inserting equipment:', equipmentId);
-           //await db.insertRentalEquipment(rentalId, equipmentId);
+            console.log('Inserting into rental:', result.rental_id);
+            await db.insertRentalEquipment(result.rental_id, equipmentId);
         }
 
         // Redirect to a success page or return a success response
-        //res.redirect('/rentalSuccess');
+        res.redirect('/rentals/success');
     } catch (error) {
         console.error('Error submitting rental:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+router.get('/success', authCheck, async (req, res) => { 
+    try {
+        res.render('rentalSuccess', {user: req.user});
+    } catch {
+        console.error('Error redirecting to /success:', error);
         res.status(500).send('Internal Server Error');
     }
 });

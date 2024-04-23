@@ -66,57 +66,6 @@ class CageDB {
                 });
             }
     
-            
-    
-            async function checkTriggerExists(triggerName) {
-                try {
-                    const result = await knex.raw(`
-                        SELECT 1 
-                        FROM information_schema.triggers 
-                        WHERE trigger_name = '${triggerName}'
-                    `);
-                    return !!result.rows.length; // Return true if there are rows (trigger exists), false otherwise
-                } catch (error) {
-                    console.error('Error checking trigger existence:', error);
-                    throw error;
-                }
-            }
-            
-            const availabilityDecrementTrigger = await checkTriggerExists('decrement_availability_trigger');
-            
-            if (!availabilityDecrementTrigger) {
-                await knex.raw(`
-                    CREATE OR REPLACE FUNCTION decrement_availability_trigger_function()
-                    RETURNS TRIGGER AS $$
-                    BEGIN
-                        IF TG_OP = 'INSERT' THEN
-                            IF NEW.rental_status = 'approved' OR NEW.rental_status = 'in progress' THEN
-                                UPDATE "Availability" 
-                                SET available_quantity = available_quantity - 1
-                                WHERE equipment_id = NEW.equipment_id;
-                            END IF;
-                        ELSIF TG_OP = 'UPDATE' THEN
-                            IF NEW.rental_status = 'approved' AND OLD.rental_status <> 'approved' THEN
-                                UPDATE "Availability" 
-                                SET available_quantity = available_quantity - 1
-                                WHERE equipment_id = NEW.equipment_id;
-                            ELSIF NEW.rental_status = 'in progress' AND OLD.rental_status <> 'in progress' THEN
-                                UPDATE "Availability" 
-                                SET available_quantity = available_quantity - 1
-                                WHERE equipment_id = NEW.equipment_id;
-                            END IF;
-                        END IF;
-                        RETURN NEW;
-                    END;
-                    $$ LANGUAGE plpgsql;
-            
-                    CREATE TRIGGER decrement_availability_trigger
-                    BEFORE INSERT OR UPDATE ON "RentalEquipment"
-                    FOR EACH ROW
-                    EXECUTE FUNCTION decrement_availability_trigger_function();
-                `);
-            }
-            
     
         console.log('Database initialization complete');
         } catch (error) {
@@ -284,6 +233,71 @@ class CageDB {
         }
     }
     
+    async insertRental(user_id, startDate, endDate, notes, course) {
+        try {
+            const [rental_id] = await knex('Rentals')
+                .returning('rental_id')
+                .insert({
+                user_id: user_id,
+                rental_start_date: startDate,
+                rental_end_date: endDate,
+                rental_status: 'pending',
+                notes: notes,
+                course: course
+            });
+            return rental_id;
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async insertRentalEquipment(rental_id, equipment_id) {
+        try {
+            const result = await knex('RentalEquipment').insert({
+                rental_id: rental_id,
+                equipment_id: equipment_id
+            });
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async getRentalsByUser(user_id) {
+        try {
+            const rentals = await knex('Rentals')
+                .select('*')
+                .where('user_id', user_id);
+            return rentals;
+        } catch {
+            console.error('Error retrieving rentals:', error);
+            throw error; // Rethrow the error to the caller
+        }
+    }
+
+    async getEquipmentByRental(rental_id) {
+        try {
+            const equipment = await knex('RentalEquipment')
+                .select('Equipment.name')
+                .join('Equipment', 'RentalEquipment.equipment_id', 'Equipment.equipment_id')
+                .where('RentalEquipment.rental_id', rental_id);
+            return equipment.map(e => e.name);
+        } catch (error){
+            console.error('Error retrieving equipment:', error);
+            throw error; // Rethrow the error to the caller
+        }
+    }
+
+    async getAllRentals() {
+        try {
+            const rentals = await knex('Rentals')
+                .select('Rentals.*', 'Users.first_name', 'Users.last_name')
+                .innerJoin('Users', 'Rentals.user_id', 'Users.user_id')
+            return rentals;
+        } catch (err) {
+            console.error('Error retrieving rentals:', err);
+            throw err; // Rethrow the error to the caller
+        }
+    }
 
 }
 

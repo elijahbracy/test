@@ -1,0 +1,12 @@
+extends layout.pug 
+
+block content 
+    .container 
+        .row.text-center.mb-4
+            .col
+                h1 Your rental was submitted successfully
+                // Buttons for redirecting
+                a(href='/')
+                    button Go to Homepage
+                a(href='/profile/rentals') 
+                    button View Rentals

@@ -115,3 +115,74 @@ const addEquipment = async () => {
         // Handle error if needed
     }
 }
+
+document.addEventListener("DOMContentLoaded", function() {
+    const allRentalsButton = document.getElementById("allRentalsButton");
+    allRentalsButton.addEventListener("click", function() {
+        getAllRentals();
+    });
+});
+
+const getAllRentals = async () => { 
+    const response = await axios.get('/admin/getAllRentals');
+    console.log(response);
+    createRentalTable(response.data);
+}
+
+const createRentalTable = async (rentals) => {
+    // get table body
+    const tbody = document.querySelector('tbody');
+    
+    //remove existing elements of tbody
+    while (tbody.firstChild) {
+        tbody.removeChild(tbody.firstChild);
+    }
+
+    for (const rental of rentals.rentalsWithEquipment) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+        <td>${rental.first_name} ${rental.last_name}</td>
+        <td>${rental.equipment}</td>
+        <td>${rental.rental_start_date}</td>
+        <td>${rental.rental_end_date}</td>
+        <td>${rental.rental_status}</td>
+        <td>${rental.course}</td>
+        <td>${rental.notes}</td>
+        `;
+        
+        // Add a click event listener to each row
+        tr.addEventListener('click', () => {
+            // Navigate to the page of the specific rental
+            window.location.href = `/admin/rentals/${rental.rental_id}`;
+        });
+        
+        tbody.appendChild(tr);
+    }
+}
+
+
+
+
+const loadRentals = async () => {
+    const response = await axios.get('/admin/getRentals');
+    const tbody = document.querySelector('tbody');
+    while (tbody.firstChild) {
+        tbody.removeChild(tbody.firstChild);
+    }
+    //console.log('response', response);
+    if (response && response.data && response.data.rentals) {
+        for (const rental of response.data.rentals) {
+            const tr = document.createElement('tr');
+            //const role = String(user.role);
+            //const makeAdminButton = role === "admin" ? '' : `<button class='btn btn-success' onclick='toggleAdmin(${user.user_id})'>Make Admin</button>`;
+            //const removeAdminButton = role === "admin" ? `<button class='btn btn-warning' onclick='toggleAdmin(${user.user_id})'>Remove Admin</button>` : '';
+            tr.innerHTML = `
+                <td>${user.first_name}</td>
+                <td>${user.last_name}</td>
+                <td>${user.email}</td>
+                <td>${user.role}</td>
+            `;
+            tbody.appendChild(tr);
+        }
+    }
+}

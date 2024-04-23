@@ -21,12 +21,12 @@ block content
                         input#email.form-control(type="email", name="email", value=user.email, required)
                     .form-group
                         label(for="course") Course: 
-                        input#course.form-control(type="text", name="course", value="What course is this for?", required)
+                        input#course.form-control(type="text", name="course", placeholder="What course is this for?", required)
                     .form-group
                         label Equipment:
                         each equipment in equipmentOptions
                             div
-                                input(type="checkbox", name="equipment", value=equipment.id)
+                                input(type="checkbox", name="equipment", value=equipment.equipment_id)
                                 | #{equipment.name}
                     .form-group
                         label(for="startDate") Start Date:

@@ -1,0 +1,28 @@
+extends layout.pug
+
+block content
+  h1 Rental Details
+  // Display rental information
+  p Rental ID: #{rental.id}
+  p First Name: #{rental.first_name}
+  p Last Name: #{rental.last_name}
+  p Equipment: #{rental.equipment}
+  p Rental Start Date: #{rental.rental_start_date}
+  p Rental End Date: #{rental.rental_end_date}
+  p Rental Status: #{rental.rental_status}
+  // Form to edit rental information
+  form(action=`/admin/rentals/${rental.id}`, method='POST')
+    label(for='start_date') Start Date:
+    input(type='date', name='start_date', value=rental.rental_start_date)
+    label(for='end_date') End Date:
+    input(type='date', name='end_date', value=rental.rental_end_date)
+    label(for='equipment') Equipment:
+    input(type='text', name='equipment', value=rental.equipment)
+    label(for='status') Rental Status:
+    select(name='status')
+      option(value='pending' selected=rental.rental_status==='pending') Pending
+      option(value='active' selected=rental.rental_status==='active') Active
+      option(value='completed' selected=rental.rental_status==='completed') Completed
+    button(type='submit') Save Changes
+
+

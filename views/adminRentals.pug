@@ -1,0 +1,20 @@
+extends layout.pug
+
+block content
+    script(src="/javascripts/admin-routes.js")
+    h1 Rentals
+    button#allRentalsButton(type="button") All Rentals 
+    
+    table.table.table-striped#rentalsTable 
+        thead 
+            tr 
+                th Rentee
+                th Rental Equipment
+                th Rental Start
+                th Rental End
+                th Rental Status
+                th Course
+                th Notes
+        tbody 
+
+                

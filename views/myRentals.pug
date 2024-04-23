@@ -1,0 +1,26 @@
+extends layout.pug
+
+block content
+    script(src="/javascripts/profile-routes.js")
+    h1 My Rentals
+    table.table.table-striped
+        thead
+            tr
+                th Rental ID
+                th Equipment
+                th Start Date
+                th End Date
+                th Status
+                th Notes
+        tbody
+            each rental in rentals
+                tr
+                    td #{rental.rental_id}
+                    td #{rental.equipment}
+                    td #{rental.rental_start_date}
+                    td #{rental.rental_end_date}
+                    td #{rental.rental_status}
+                    td #{rental.notes}
+
+
+

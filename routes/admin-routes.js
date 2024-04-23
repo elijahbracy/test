@@ -96,13 +96,80 @@ router.delete('/equipment/:id', roleCheck('admin'), async (req, res) => {
         res.status(200).send;
     } catch (err) {
         console.error("Error deleting equipment:", err);
-        console.log()
         res.status(500).send('Internal Server Error');
     }
 });
 
 router.post('/equipment/:id', roleCheck('admin'), async(req, res) => {
 
+});
+
+router.get('/rentals', roleCheck('admin'), async(req, res) => {
+    try {
+        res.render('adminRentals', {user: req.user});
+    } catch (err) {
+        console.error("Error deleting equipment:", err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+router.get('/rentals/:id', roleCheck('admin'), async(req, res) => {
+    try {
+        res.render('adminRental', {user: req.user});
+    } catch (err) {
+        console.error("Error deleting equipment:", err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+
+router.get('/getAllRentals', roleCheck('admin'), async(req, res) => {
+    try {
+        const rentals = await db.getAllRentals();
+        const rentalsWithEquipment = [];
+        for (rental of rentals) {
+            const rentalWithEquipment = await Promise.all(rentals.map(async (rental) => {
+                const equipment = await db.getEquipmentByRental(rental.rental_id);
+                rentalsWithEquipment.push({ ...rental, equipment });
+            }));
+            
+        }
+        res.status(200).json({rentalsWithEquipment});
+    } catch (err) {
+        console.error("Error retrieving rentals:", err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+
+router.get('/getPendingRentals', roleCheck('admin'), async(req, res) => {
+    try {
+        await db.getAllRentals();
+        res.status(200).send;
+    } catch (err) {
+        console.error("Error retrieving rentals:", err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+router.get('/getIncomingRentals', roleCheck('admin'), async(req, res) => {
+    try {
+        await db.getAllRentals();
+        res.status(200).send;
+    } catch (err) {
+        console.error("Error retrieving rentals:", err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+router.get('/getOutgoingRentals', roleCheck('admin'), async(req, res) => {
+    try {
+        await db.getAllRentals();
+        res.status(200).send;
+    } catch (err) {
+        console.error("Error retrieving rentals:", err);
+        res.status(500).send('Internal Server Error');
+    }
 });
 
 module.exports = router;
