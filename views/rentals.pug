@@ -20,10 +20,61 @@ block content
                         label(for="email") Email:
                         input#email.form-control(type="email", name="email", value=user.email, required)
                     .form-group
-                        label(for="equipment") Equipment:
-                        select#equipment.form-control(name="equipment", required)
-                            each equipment in equipmentOptions
-                                option(value=equipment.id)= equipment.name
+                        label(for="course") Course: 
+                        input#course.form-control(type="text", name="course", value="What course is this for?", required)
+                    .form-group
+                        label Equipment:
+                        each equipment in equipmentOptions
+                            div
+                                input(type="checkbox", name="equipment", value=equipment.id)
+                                | #{equipment.name}
+                    .form-group
+                        label(for="startDate") Start Date:
+                        input#startDate.form-control(type="date", name="startDate", required, min=new Date().toISOString().split('T')[0], value=new Date().toISOString().split('T')[0])
+                        span#startDateNotification(style="display: none; color: red; margin-left: 5px;")
+                    .form-group
+                        label(for="endDate") End Date:
+                        input#endDate.form-control(type="date", name="endDate", required, min=new Date().toISOString().split('T')[0])
+                        span#endDateNotification(style="display: none; color: red; margin-left: 5px;")
+                        script.
+                            const startDateInput = document.getElementById('startDate');
+                            const endDateInput = document.getElementById('endDate');
+                            const startDateNotification = document.getElementById('startDateNotification');
+                            const endDateNotification = document.getElementById('endDateNotification');
+                            
+                            startDateInput.addEventListener('change', () => {
+                                endDateInput.min = startDateInput.value;
+                                checkRentalDuration();
+                            });
+                            
+                            endDateInput.addEventListener('change', () => {
+                                checkRentalDuration();
+                            });
+
+                            function checkRentalDuration() {
+                                const startDate = new Date(startDateInput.value);
+                                const endDate = new Date(endDateInput.value);
+                                const oneDay = 24 * 60 * 60 * 1000; // milliseconds in a day
+                                const diffDays = Math.round(Math.abs((startDate - endDate) / oneDay));
+                                const startDay = startDate.getDay(); // 0 for monday, 1 for tuesday, etc.
+                                const endDay = endDate.getDay();
+                                console.log(diffDays);
+                                console.log("startDay: " + startDay);
+                                console.log("endDay: " + endDay);
+                                if (diffDays > 1 && !(startDay === 4 && endDay === 0)) {
+                                    // Show message if rental spans more than 1 business day
+                                    startDateNotification.textContent = 'Please note that our standard rentals are for 1 business day. If you require a longer rental period, please provide a reason in the additional notes section. Refer to our policies for more information.';
+                                    startDateNotification.style.display = 'inline';
+                                } else {
+                                    // Clear message if rental duration is within 1 business day or spans a weekend
+                                    startDateNotification.textContent = '';
+                                    startDateNotification.style.display = 'none';
+                                }
+                            }
+                    .form-group
+                        label(for="notes") Additional Notes:
+                        textarea#notes.form-control(name="notes", rows="4", placeholder="Enter additional notes here")
+
                     button.btn.btn-primary(type="submit") Submit Rental
             else 
                 // Sign-in button for non-authenticated users

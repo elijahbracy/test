@@ -1,0 +1,19 @@
+//- addEquipmentModal.pug
+.modal.fade#addEquipmentModal(tabindex="-1", role="dialog", aria-labelledby="exampleModalLabel", aria-hidden="true")
+    .modal-dialog(role="document")
+        .modal-content
+            .modal-header
+                h5.modal-title Add Equipment
+                button.close(type="button", onclick="closeAddEquipmentModal()", aria-label="Close")
+                    span(aria-hidden="true") &times;
+            .modal-body
+                form#equipmentForm
+                    .form-group
+                        label(for="equipmentName") Name:
+                        input#equipmentName.form-control(type="text", required)
+                    .form-group
+                        label(for="equipmentQuantity") Quantity:
+                        input#equipmentQuantity.form-control(type="number", required)
+            .modal-footer
+                button.btn.btn-secondary(type="button", onclick="closeAddEquipmentModal()") Close
+                button.btn.btn-primary(type="button", onclick="addEquipment()") Add

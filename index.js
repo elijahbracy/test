@@ -6,6 +6,7 @@ const authRoutes = require('./routes/auth-routes');
 const profileRoutes = require('./routes/profile-routes');
 const rentalRoutes = require('./routes/rental-routes');
 const adminRoutes = require('./routes/admin-routes');
+const publicRoutes = require('./routes/public-routes');
 const passportSetup = require('./config/passport-setup');
 //const Database = require('./db');
 const db = require('./db'); // importing database
@@ -54,6 +55,7 @@ app.use('/auth', authRoutes);
 app.use('/profile', profileRoutes);
 app.use('/rentals', rentalRoutes);
 app.use('/admin', adminRoutes);
+app.use('/api', publicRoutes);
 
 app.use('/', require('./routes/main'));
 

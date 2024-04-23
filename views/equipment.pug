@@ -3,6 +3,7 @@ extends layout.pug
 block content 
     script(src="/javascripts/admin-routes.js")
     h1 Equipment
+    a.btn.btn-primary(type="button", onclick="openAddEquipmentModal()") Add Equipment
     table.table.table-striped
         thead
             tr
@@ -12,3 +13,5 @@ block content
         tbody
             script. 
                 loadEquipment()
+
+    include addEquipmentModal.pug

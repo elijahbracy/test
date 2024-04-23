@@ -74,14 +74,35 @@ router.get('/equipment', roleCheck('admin'), async (req, res) => {
     res.render('equipment', { user: req.user });
 });
 
-router.get('/getEquipment', roleCheck('admin'), async (req, res) => {
+router.post('/addEquipment', roleCheck('admin'), async (req, res) => {
     try {
-        const equipment = await db.getEquipment();
-        res.json({ equipment });
+        // Extract equipment data from the request body
+        const { name, quantity } = req.body;
+        
+        // Call the function to add equipment to the database
+        await db.addEquipment(name, quantity);
+        
+        // Send a success response
+        res.status(200).send('Equipment added successfully');
     } catch (err) {
-        console.error('Error fetching equipment:', err);
+        console.error('Error adding equipment:', err);
         res.status(500).send('Internal Server Error');
     }
+});
+
+router.delete('/equipment/:id', roleCheck('admin'), async (req, res) => {
+    try {
+        await db.deleteEquipment(req.params.id);
+        res.status(200).send;
+    } catch (err) {
+        console.error("Error deleting equipment:", err);
+        console.log()
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+router.post('/equipment/:id', roleCheck('admin'), async(req, res) => {
+
 });
 
 module.exports = router;

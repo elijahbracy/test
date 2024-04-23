@@ -216,7 +216,7 @@ class CageDB {
     async makeUserAdmin(userId) {
         try {
             // Update the user's isAdmin status to true
-            await this.updateUserById(userId, { isAdmin: true });
+            await this.updateUserById(userId, { role: "admin" });
             
             // Return a success message or handle the result as needed
             return 'User has been made an admin successfully.';
@@ -239,7 +239,50 @@ class CageDB {
             throw error; // Rethrow the error to be handled by the calling function
         }
     }
+
+    async addEquipment(name, quantity) {
+        try {
+            // Insert a new equipment record into the database
+            const newEquipment = await knex('Equipment').insert({
+                name: name,
+                quantity: quantity
+            });
     
+            return newEquipment; // Return the newly inserted equipment data
+        } catch (error) {
+            // Handle any errors that occur during the database operation
+            console.error('Error adding equipment:', error);
+            throw error; // Rethrow the error to be handled by the calling function
+        }
+    }
+
+    async deleteEquipment(id) {
+        try {
+            // Assuming 'knex' is your Knex.js instance
+            await knex('Equipment').where('equipment_id', id).del();
+            console.log(`Equipment with ID ${id} deleted successfully`);
+            // Optionally, you can return a success message or status code
+            return { success: true, message: `Equipment with ID ${id} deleted successfully` };
+        } catch (error) {
+            console.error('Error deleting equipment:', error);
+            // Optionally, you can throw the error to be handled by the caller
+            throw error;
+        }
+    }
+
+    async getAvailability(equipment_id) {
+        try {
+            const availability = await knex('Availability')
+                .select('available_quantity', 'available_date')
+                .where('equipment_id', equipment_id);
+
+            return availability;
+        }catch (error) {
+            console.error('Error retrieving availability:', error);
+            // Optionally, you can throw the error to be handled by the caller
+            throw error;
+        }
+    }
     
 
 }

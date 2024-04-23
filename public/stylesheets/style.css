@@ -2,3 +2,14 @@
 .bg-maroon {
     background-color: maroon;
 }
+
+/* Add this CSS to your stylesheet */
+.badge-secondary {
+    color: #000; /* Set the text color to black */
+}
+
+
+ul#equipmentList {
+    list-style-type: none;
+    padding-left: 0;
+}

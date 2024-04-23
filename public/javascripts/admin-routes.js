@@ -41,7 +41,7 @@ const loadUsers = async () => {
 }
 
 const loadEquipment = async () => {
-    const response = await axios.get('/admin/getEquipment');
+    const response = await axios.get('/api/getEquipment');
     const tbody = document.querySelector('tbody');
     while (tbody.firstChild) {
         tbody.removeChild(tbody.firstChild);
@@ -53,12 +53,65 @@ const loadEquipment = async () => {
             tr.innerHTML = `
                 <td>${equipment.name}</td>
                 <td>${equipment.quantity}</td>
+                <td>${equipment.available_quantity ? equipment.available_quantity : 0}</td>
                 <td>
-                    <button class='btn btn-danger' onclick='deleteUser(${user.user_id})'>Delete</button>
+                    <button class='btn btn-warning' onclick= 'editEquipment(${equipment.equipment_id})'>Edit</button>
+                </td>
+                <td>
+                    <button class='btn btn-danger' onclick= 'deleteEquipment(${equipment.equipment_id})'>Delete</button>
                 </td>
             `;
             tbody.appendChild(tr);
         }
+    }
+}
+
+
+const editEquipment = async (id) => {
+    await axios.post(`/admin/equipment/${id}`);
+    await loadEquipment();
+}
+
+const deleteEquipment = async (equipmentId) => {
+    await axios.delete(`/admin/equipment/${equipmentId}`);
+    await loadEquipment();
+}
+
+const openAddEquipmentModal = () => {
+    const modal = document.getElementById('addEquipmentModal');
+    const backdrop = document.createElement('div');
+    backdrop.classList.add('modal-backdrop', 'fade', 'show');
+    document.body.appendChild(backdrop);
+    modal.classList.add('show');
+    modal.style.display = 'block';
+    document.body.classList.add('modal-open');
+}
+
+function closeAddEquipmentModal() {
+    const modal = document.getElementById('addEquipmentModal');
+    const backdrop = document.querySelector('.modal-backdrop');
+    modal.classList.remove('show');
+    modal.style.display = 'none';
+    document.body.classList.remove('modal-open');
+    backdrop.parentNode.removeChild(backdrop);
+}
+
+    
+const addEquipment = async () => {
+    const name = document.getElementById('equipmentName').value;
+    const quantity = document.getElementById('equipmentQuantity').value;
+
+    try {
+        // Make a POST request to add equipment
+        await axios.post('/admin/addEquipment', { name, quantity });
         
+        // Reload equipment list after adding
+        await loadEquipment();
+        
+        // Close the modal
+        closeAddEquipmentModal();
+    } catch (error) {
+        console.error('Error adding equipment:', error);
+        // Handle error if needed
     }
 }
