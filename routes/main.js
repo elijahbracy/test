@@ -63,7 +63,7 @@ router.get('/', async (req, res) => {
 
 router.get('/send-test-email', async (req, res) => {
     // Set SendGrid API key
-    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    //sgMail.setApiKey(process.env.SENDGRID_API_KEY);
     try {
         const msg = {
             to: 'ebracy@ramapo.edu', // Change to your recipient
