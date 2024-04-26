@@ -3,7 +3,11 @@ const router = express.Router();
 const { google } = require('googleapis');
 require('dotenv').config();
 
+// Require for sendgrid
 const sgMail = require('@sendgrid/mail');
+
+// Set SendGrid API key
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const NodeCache = require('node-cache');
 const cache = new NodeCache({ stdTTL: 3600 }); // Cache TTL set to 1 hour
@@ -62,15 +66,13 @@ router.get('/', async (req, res) => {
 });
 
 router.get('/send-test-email', async (req, res) => {
-    // Set SendGrid API key
-    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
     try {
         const msg = {
-            to: 'ebracy@ramapo.edu', // Change to your recipient
+            to: 'ppittman@ramapo.edu', // Change to your recipient
             from: 'ebracy@ramapo.edu', // Change to your verified sender
-            subject: 'Sending with SendGrid is Fun',
-            text: 'and easy to do anywhere, even with Node.js',
-            html: '<strong>and easy to do anywhere, even with Node.js</strong>',
+            subject: 'Sent AUTOMATICALLY',
+            text: 'FROM THE BEST AIDE IN THE GAME',
+            html: '<strong>FROM THE BEST AIDE IN THE GAME</strong>',
         };
 
         await sgMail.send(msg);

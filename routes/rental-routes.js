@@ -1,6 +1,7 @@
 const db = require('../db');
 const knex = require('../config/knexfile');
 const router = require('express').Router();
+const sgMail = require('@sendgrid/mail');
 
 // admin-routes.js
 
@@ -77,6 +78,25 @@ router.post('/', authCheck, async (req, res) => {
             console.log('Inserting equipment:', equipmentId);
             console.log('Inserting into rental:', result.rental_id);
             await db.insertRentalEquipment(result.rental_id, equipmentId);
+        }
+
+        // send confirmation email
+        try {
+            const msg = {
+                to: email, // Change to the user's email address
+                from: 'ebracy@ramapo.edu', // Change to your verified sender
+                subject: 'Rental Request Received',
+                text: `Hello ${firstName} ${lastName},\n\n
+                Thank you for submitting your rental request. We have received your request and will review it shortly.\n\n
+                Selected Equipment: ${equipment.join(', ')}\n\n
+                You will receive another email once your request has been reviewed and processed.\n\n
+                Best regards,\nThe Rental Team`,
+            };
+            await sgMail.send(msg);
+            //res.send('Test email sent successfully.');
+        } catch (error) {
+            console.error(error);
+            res.status(500).send('Error sending test email.');
         }
 
         // Redirect to a success page or return a success response
