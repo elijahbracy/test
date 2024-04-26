@@ -1,6 +1,7 @@
 const db = require('../db');
-
+const knex = require('../config/knexfile');
 const router = require('express').Router();
+const moment = require('moment')
 
 // Middleware function to check if the user is authenticated and has the appropriate role
 const roleCheck = (requiredRole) => {
@@ -80,7 +81,10 @@ router.post('/addEquipment', roleCheck('admin'), async (req, res) => {
         const { name, quantity } = req.body;
         
         // Call the function to add equipment to the database
-        await db.addEquipment(name, quantity);
+        const equipment_id = await db.addEquipment(name, quantity);
+        console.log('equipment_id', equipment_id);
+        // add same amount to available
+        await db.addAvailability(equipment_id, quantity);
         
         // Send a success response
         res.status(200).send('Equipment added successfully');
@@ -108,16 +112,61 @@ router.get('/rentals', roleCheck('admin'), async(req, res) => {
     try {
         res.render('adminRentals', {user: req.user});
     } catch (err) {
-        console.error("Error deleting equipment:", err);
+        console.error("Error navigating to /rentals:", err);
         res.status(500).send('Internal Server Error');
     }
 });
 
 router.get('/rentals/:id', roleCheck('admin'), async(req, res) => {
     try {
-        res.render('adminRental', {user: req.user});
+        //console.log('rental', rental);
+        const rental = await db.getRentalById(req.params.id);
+        console.log(rental);
+
+        const equipment = await db.getEquipmentByRental(req.params.id);
+        console.log('equipment: ', equipment);
+
+        const user = await db.getUserById(rental.user_id);
+        console.log(user);
+
+        const availableEquipment = await knex('Equipment')
+            .leftJoin('Availability', 'Equipment.equipment_id', 'Availability.equipment_id')
+            .whereNotNull('Availability.available_quantity') // Filter out equipment with no availability
+            .select('Equipment.equipment_id', 'Equipment.name');
+
+        // Logic to determine checked equipment
+        const checkedEquipment = availableEquipment.map(equipmentItem => {
+            return {
+                ...equipmentItem,
+                checked: equipment.includes(equipmentItem.name)
+            };
+        });
+        console.log('checkEquipment: ', checkedEquipment)
+        res.render('adminRental', {user: user, rental: rental, equipment: equipment, availableEquipment: availableEquipment, checkedEquipment: checkedEquipment});
     } catch (err) {
-        console.error("Error deleting equipment:", err);
+        console.error("Error getting rental:", err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+router.post('/rentals/:id', roleCheck('admin'), async(req, res) => {
+    try {
+
+        console.log(req.body);
+        console.log(rental);
+        // Extract equipment data from the request body
+        //const { name, quantity } = req.body;
+        
+        // // Call the function to add equipment to the database
+        // const equipment_id = await db.addEquipment(name, quantity);
+        // console.log('equipment_id', equipment_id);
+        // // add same amount to available
+        // await db.addAvailability(equipment_id, quantity);
+        
+        // Send a success response
+        //res.status(200).send('Equipment added successfully');
+    } catch (err) {
+        console.error("Error editing rental:", err);
         res.status(500).send('Internal Server Error');
     }
 });
@@ -127,13 +176,17 @@ router.get('/getAllRentals', roleCheck('admin'), async(req, res) => {
     try {
         const rentals = await db.getAllRentals();
         const rentalsWithEquipment = [];
+        //console.log(rentals);
         for (rental of rentals) {
-            const rentalWithEquipment = await Promise.all(rentals.map(async (rental) => {
-                const equipment = await db.getEquipmentByRental(rental.rental_id);
-                rentalsWithEquipment.push({ ...rental, equipment });
-            }));
+            const equipment = await db.getEquipmentByRental(rental.rental_id);
+            const formattedRental = { ...rental, equipment};
+            formattedRental.rental_start_date = moment(rental.rental_start_date).format('YYYY-MM-DD');
+            formattedRental.rental_end_date = moment(rental.rental_end_date).format('YYYY-MM-DD');
+            rentalsWithEquipment.push(formattedRental);
+            //console.log({...rental, equipment})
             
         }
+        console.log(rentalsWithEquipment);
         res.status(200).json({rentalsWithEquipment});
     } catch (err) {
         console.error("Error retrieving rentals:", err);

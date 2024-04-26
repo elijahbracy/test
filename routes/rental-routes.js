@@ -2,6 +2,21 @@ const db = require('../db');
 const knex = require('../config/knexfile');
 const router = require('express').Router();
 
+// admin-routes.js
+
+// Define formatDate function
+function formatDate(dateString) {
+    if (!dateString) return ''; // Return empty string if dateString is not provided
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    let month = (date.getMonth() + 1).toString();
+    let day = date.getDate().toString();
+    if (month.length === 1) month = '0' + month; // Add leading zero if month is single digit
+    if (day.length === 1) day = '0' + day; // Add leading zero if day is single digit
+    return `${year}-${month}-${day}`;
+}
+
+
 // middleware function to check if the user is authenticated
 const authCheck = (req, res, next) => {
     if (!req.user) {
@@ -36,6 +51,10 @@ router.post('/', authCheck, async (req, res) => {
         const user = await db.getUserByEmail(email);
         console.log("user:", user);
 
+        // change dates to proper format
+        const startDateFinal = formatDate(startDate);
+        const endDateFinal = formatDate(endDate);
+
         // Log the form data
         console.log('First Name:', firstName);
         console.log('Last Name:', lastName);
@@ -45,6 +64,9 @@ router.post('/', authCheck, async (req, res) => {
         console.log('End Date:', endDate);
         console.log('Course: ', course);
         console.log('Additional Notes:', notes);
+        console.log('start date final:', startDateFinal);
+        console.log('end date final:', endDateFinal);
+
 
         // Insert rental information into the rental table
         const result = await db.insertRental(user.user_id, startDate, endDate, notes, course);

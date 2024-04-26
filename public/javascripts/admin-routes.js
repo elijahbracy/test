@@ -140,6 +140,9 @@ const createRentalTable = async (rentals) => {
 
     for (const rental of rentals.rentalsWithEquipment) {
         const tr = document.createElement('tr');
+        // Add a click event listener to each row
+        tr.dataset.id = rental.rental_id;
+        tr.addEventListener('click', onRowClick);
         tr.innerHTML = `
         <td>${rental.first_name} ${rental.last_name}</td>
         <td>${rental.equipment}</td>
@@ -150,16 +153,22 @@ const createRentalTable = async (rentals) => {
         <td>${rental.notes}</td>
         `;
         
-        // Add a click event listener to each row
-        tr.addEventListener('click', () => {
-            // Navigate to the page of the specific rental
-            window.location.href = `/admin/rentals/${rental.rental_id}`;
-        });
+        
         
         tbody.appendChild(tr);
     }
 }
 
+const onRowClick = (e) => {
+    //console.log(e.target.parentNode);
+    let row = e.target;
+    if (e.target.tagName.toUpperCase() === 'TD') {
+        row = e.target.parentNode;
+    }
+    console.log(row.dataset.id);
+    const rental_id = row.dataset.id;
+    window.location.href = `/admin/rentals/${rental_id}`;
+};
 
 
 

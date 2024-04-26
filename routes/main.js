@@ -3,6 +3,8 @@ const router = express.Router();
 const { google } = require('googleapis');
 require('dotenv').config();
 
+const sgMail = require('@sendgrid/mail');
+
 const NodeCache = require('node-cache');
 const cache = new NodeCache({ stdTTL: 3600 }); // Cache TTL set to 1 hour
 
@@ -56,6 +58,26 @@ router.get('/', async (req, res) => {
     } catch (error) {
         console.error('Error rendering main page:', error);
         res.render('main', { videos: [], user: req.user, error: error });
+    }
+});
+
+router.get('/send-test-email', async (req, res) => {
+    // Set SendGrid API key
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    try {
+        const msg = {
+            to: 'ebracy@ramapo.edu', // Change to your recipient
+            from: 'ebracy@ramapo.edu', // Change to your verified sender
+            subject: 'Sending with SendGrid is Fun',
+            text: 'and easy to do anywhere, even with Node.js',
+            html: '<strong>and easy to do anywhere, even with Node.js</strong>',
+        };
+
+        await sgMail.send(msg);
+        res.send('Test email sent successfully.');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error sending test email.');
     }
 });
 

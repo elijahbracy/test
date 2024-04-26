@@ -192,15 +192,30 @@ class CageDB {
     async addEquipment(name, quantity) {
         try {
             // Insert a new equipment record into the database
-            const newEquipment = await knex('Equipment').insert({
+            const result = await knex('Equipment')
+                .returning('equipment_id')
+                .insert({
                 name: name,
                 quantity: quantity
             });
-    
-            return newEquipment; // Return the newly inserted equipment data
+            console.log('result', result);
+            return result[0].equipment_id; // Return the newly inserted equipment data
         } catch (error) {
             // Handle any errors that occur during the database operation
             console.error('Error adding equipment:', error);
+            throw error; // Rethrow the error to be handled by the calling function
+        }
+    }
+
+    async addAvailability(equipment_id, quantity) {
+        try {
+            await knex('Availability').insert({
+                equipment_id: equipment_id,
+                available_quantity: quantity
+            });
+        } catch (error) {
+            // Handle any errors that occur during the database operation
+            console.error('Error adding equipment availability:', error);
             throw error; // Rethrow the error to be handled by the calling function
         }
     }
@@ -293,6 +308,18 @@ class CageDB {
                 .select('Rentals.*', 'Users.first_name', 'Users.last_name')
                 .innerJoin('Users', 'Rentals.user_id', 'Users.user_id')
             return rentals;
+        } catch (err) {
+            console.error('Error retrieving rentals:', err);
+            throw err; // Rethrow the error to the caller
+        }
+    }
+
+    async getRentalById(rental_id) {
+        try {
+            const rental = await knex('Rentals')
+                .select('*')
+                .where('Rentals.rental_id', rental_id);
+            return rental[0];
         } catch (err) {
             console.error('Error retrieving rentals:', err);
             throw err; // Rethrow the error to the caller

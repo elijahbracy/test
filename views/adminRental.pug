@@ -1,12 +1,17 @@
 extends layout.pug
 
 block content
+  script(src="/javascripts/admin-routes.js")
   h1 Rental Details
   // Display rental information
-  p Rental ID: #{rental.id}
-  p First Name: #{rental.first_name}
-  p Last Name: #{rental.last_name}
-  p Equipment: #{rental.equipment}
+  p Rental ID: #{rental.rental_id}
+  p First Name: #{user.first_name}
+  p Last Name: #{user.last_name}
+  p Equipment: 
+    each item, index in equipment
+        | #{item}
+        if index !== equipment.length - 1
+         | , 
   p Rental Start Date: #{rental.rental_start_date}
   p Rental End Date: #{rental.rental_end_date}
   p Rental Status: #{rental.rental_status}
@@ -17,12 +22,18 @@ block content
     label(for='end_date') End Date:
     input(type='date', name='end_date', value=rental.rental_end_date)
     label(for='equipment') Equipment:
-    input(type='text', name='equipment', value=rental.equipment)
+    each equipment in checkedEquipment
+        div
+            input(type="checkbox", name="equipment", value=equipment.equipment_id, checked=equipment.checked)
+            | #{equipment.name}
     label(for='status') Rental Status:
     select(name='status')
       option(value='pending' selected=rental.rental_status==='pending') Pending
-      option(value='active' selected=rental.rental_status==='active') Active
-      option(value='completed' selected=rental.rental_status==='completed') Completed
+      option(value='approved' selected=rental.rental_status==='approved') Approved
+      option(value='out' selected=rental.rental_status==='out') Out
+      option(value='overdue' selected=rental.rental_status==='overdue') Overdue
+      option(value='complete' selected=rental.rental_status==='complete') Complete
+      option(value='denied' selected=rental.rental_status==='denied') Denied
     button(type='submit') Save Changes
-
+  
 
