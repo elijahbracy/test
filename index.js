@@ -7,12 +7,23 @@ const profileRoutes = require('./routes/profile-routes');
 const rentalRoutes = require('./routes/rental-routes');
 const adminRoutes = require('./routes/admin-routes');
 const publicRoutes = require('./routes/public-routes');
+const aboutRoutes = require('./routes/about-routes');
+const constructionRoute = require('./routes/underConstruction');
+
 const passportSetup = require('./config/passport-setup');
 //const Database = require('./db');
 const db = require('./db'); // importing database
 const passport = require('./config/passport-setup');
 //const passport = require('./config/passport-setup'); // Import the passport configuration
 //const passportSetup = require('./passport-setup'); 
+
+// Require for sendgrid
+const sgMail = require('@sendgrid/mail');
+
+// Set SendGrid API key
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+const cron = require('node-cron');
 
 
 const app = express();
@@ -56,8 +67,16 @@ app.use('/profile', profileRoutes);
 app.use('/rentals', rentalRoutes);
 app.use('/admin', adminRoutes);
 app.use('/api', publicRoutes);
+app.use('/about', aboutRoutes);
+
+app.use('/unfinished', constructionRoute);
 
 app.use('/', require('./routes/main'));
+
+
+// scheduled tasks
+//const reminderEmailTask = require('./scheduledTasks/reminderEmail');
+
 
 // Use the PORT environment variable if available, otherwise use port 3000
 const port = process.env.PORT || 3000;

@@ -3,6 +3,7 @@ const knex = require('./config/knexfile');
 const fs = require('fs');
 const assert = require('assert');
 const { promisify } = require('util');
+const { readyException } = require('jquery');
 //const UserModel = require('./models/userModel');
 
 
@@ -302,6 +303,22 @@ class CageDB {
         }
     }
 
+    async getRentalsDueToday() {
+        try {
+            const today = new Date();
+            const rentals = await knex('Rentals')
+                .select('Rentals.*', 'Users.*')
+                .join('Users', 'Rentals.user_id', 'Users.user_id')
+                .where('rental_end_date', today.toISOString());
+                // Do something with the rentals due today
+            console.log(rentals);
+            return rentals;
+        } catch (err) {
+            console.error("Error retrieving rentals due today:", err);
+            throw err;
+        }
+    }
+
     async getAllRentals() {
         try {
             const rentals = await knex('Rentals')
@@ -311,6 +328,47 @@ class CageDB {
         } catch (err) {
             console.error('Error retrieving rentals:', err);
             throw err; // Rethrow the error to the caller
+        }
+    }
+
+    async getRentals(offset, pageSize) {
+        try {
+            const rentals = await knex('Rentals')
+                .select('Rentals.*', 'Users.first_name', 'Users.last_name')
+                .innerJoin('Users', 'Rentals.user_id', 'Users.user_id')
+                .offset(offset)
+                .limit(pageSize);
+    
+            return rentals;
+        } catch (err) {
+            console.error('Error retrieving rentals:', err);
+            throw err; // Rethrow the error to the caller
+        }
+    }
+
+    async updateRental(rental_id, start_date, end_date, equipment, status, notes, course) {
+        try {
+
+            console.log('rentalID:', rental_id);
+            // Update rental information in the rentals table
+            await knex('Rentals')
+                .where({ rental_id })
+                .update({ rental_start_date: start_date, rental_end_date: end_date, rental_status: status, notes: notes, course: course });
+    
+            // Update rental equipment in the rentalEquipment table
+            // First, delete all existing entries for the rental
+            await knex('RentalEquipment')
+                .where({ rental_id })
+                .del();
+    
+            // Then, insert the updated equipment list
+            const equipmentIds = equipment; // Assuming equipment is an array of equipment IDs
+            await knex('RentalEquipment').insert(equipmentIds.map(equipment_id => ({ rental_id, equipment_id })));
+    
+            return true; // Return true if the update was successful
+        } catch (error) {
+            console.error('Error updating rental:', error);
+            throw error;
         }
     }
 

@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const db = require('../db')
+const moment = require('moment');
 
 // middleware function to check if the user is authenticated
 const authCheck = (req, res, next) => {
@@ -26,8 +27,11 @@ router.get('/rentals', authCheck, async (req, res) => {
         
         // Fetch equipment for each rental
         const rentalsWithEquipment = await Promise.all(rentals.map(async (rental) => {
+            const formattedRental = {...rental};
+            formattedRental.rental_start_date = moment(rental.rental_start_date).format('YYYY-MM-DD');
+            formattedRental.rental_end_date = moment(rental.rental_end_date).format('YYYY-MM-DD');
             const equipment = await db.getEquipmentByRental(rental.rental_id);
-            return { ...rental, equipment };
+            return { ...formattedRental, equipment };
         }));
         console.log(rentalsWithEquipment);
         // Pass combined data to the template

@@ -1,39 +1,72 @@
 extends layout.pug
 
 block content
-  script(src="/javascripts/admin-routes.js")
-  h1 Rental Details
-  // Display rental information
-  p Rental ID: #{rental.rental_id}
-  p First Name: #{user.first_name}
-  p Last Name: #{user.last_name}
-  p Equipment: 
-    each item, index in equipment
-        | #{item}
-        if index !== equipment.length - 1
-         | , 
-  p Rental Start Date: #{rental.rental_start_date}
-  p Rental End Date: #{rental.rental_end_date}
-  p Rental Status: #{rental.rental_status}
-  // Form to edit rental information
-  form(action=`/admin/rentals/${rental.id}`, method='POST')
-    label(for='start_date') Start Date:
-    input(type='date', name='start_date', value=rental.rental_start_date)
-    label(for='end_date') End Date:
-    input(type='date', name='end_date', value=rental.rental_end_date)
-    label(for='equipment') Equipment:
-    each equipment in checkedEquipment
-        div
-            input(type="checkbox", name="equipment", value=equipment.equipment_id, checked=equipment.checked)
-            | #{equipment.name}
-    label(for='status') Rental Status:
-    select(name='status')
-      option(value='pending' selected=rental.rental_status==='pending') Pending
-      option(value='approved' selected=rental.rental_status==='approved') Approved
-      option(value='out' selected=rental.rental_status==='out') Out
-      option(value='overdue' selected=rental.rental_status==='overdue') Overdue
-      option(value='complete' selected=rental.rental_status==='complete') Complete
-      option(value='denied' selected=rental.rental_status==='denied') Denied
-    button(type='submit') Save Changes
-  
+    h1 Rental Details
+
+    .style
+        style.
+            .container {
+            background-color: #f2f2f2;
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 20px;
+            }
+
+    // Container for displaying rental information
+    .container
+        p Rental ID: #{rental.rental_id}
+        p First Name: #{user.first_name}
+        p Last Name: #{user.last_name}
+        p Email: #{user.email}
+        p Course: #{rental.course}
+        p Notes: #{rental.notes}
+        p Equipment: 
+            each item, index in equipment
+                | #{item}
+                if index !== equipment.length - 1
+                | , 
+        p Rental Start Date: #{rental.rental_start_date}
+        p Rental End Date: #{rental.rental_end_date}
+        p Rental Status: #{rental.rental_status}
+
+    h1 Edit Rental
+
+    form(action=`/admin/rentals/${rental.rental_id}`, method='POST')
+        input(type='hidden', name='rental_id', value=rental.rental_id)
+        input(type='hidden', name='user_id', value=user.user_id)
+        input(type='hidden', name='user_email', value=user.email)
+        input(type='hidden', name='user_first', value=user.first_name)
+        input(type='hidden', name='user_last', value=user.last_name)
+        
+        label(for='start_date') Start Date:
+        input(type='date', name='start_date', value=rental.rental_start_date)
+        
+        label(for='end_date') End Date:
+        input(type='date', name='end_date', value=rental.rental_end_date)
+        
+        label(for='equipment') Equipment:
+        each equipment in checkedEquipment
+            div
+                input(type="checkbox", name=`equipment`, value=equipment.equipment_id, checked=equipment.checked)
+                | #{equipment.name}
+        
+        label(for='status') Rental Status:
+        select(name='status')
+            option(value='pending' selected=rental.rental_status==='pending') Pending
+            option(value='approved' selected=rental.rental_status==='approved') Approved
+            option(value='out' selected=rental.rental_status==='out') Out
+            option(value='overdue' selected=rental.rental_status==='overdue') Overdue
+            option(value='complete' selected=rental.rental_status==='complete') Complete
+            option(value='denied' selected=rental.rental_status==='denied') Denied
+        
+        label(for='course') Course:
+        input(type='text', name='course', value=rental.course)
+        
+        label(for='notes') Notes:
+        textarea(name='notes') #{rental.notes}
+
+        label(for='staff_notes') Staff Notes (Reason for Denial):
+        textarea(name='staff_notes', required=rental.rental_status==='denied')
+        
+        button(type='submit') Save Changes
 

@@ -12,13 +12,13 @@ block content
                 form(action="/rentals", method="POST")
                     .form-group
                         label(for="firstName") First Name:
-                        input#firstName.form-control(type="text", name="firstName", value=user.first_name, required)
+                        input#firstName.form-control(type="text", name="firstName", value=user.first_name, required, readonly, style="background-color: #f0f0f0;")
                     .form-group
                         label(for="lastName") Last Name:
-                        input#lastName.form-control(type="text", name="lastName", value=user.last_name, required)
+                        input#lastName.form-control(type="text", name="lastName", value=user.last_name, required, readonly, style="background-color: #f0f0f0;")
                     .form-group
                         label(for="email") Email:
-                        input#email.form-control(type="email", name="email", value=user.email, required)
+                        input#email.form-control(type="email", name="email", value=user.email, required, readonly, style="background-color: #f0f0f0;")
                     .form-group
                         label(for="course") Course: 
                         input#course.form-control(type="text", name="course", placeholder="What course is this for?", required)
@@ -28,6 +28,21 @@ block content
                             div
                                 input(type="checkbox", name="equipment", value=equipment.equipment_id)
                                 | #{equipment.name}
+                    script.
+                        const form = document.querySelector('form');
+                        form.addEventListener('submit', function(event) {
+                            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+                            let checked = false;
+                            checkboxes.forEach(function(checkbox) {
+                                if (checkbox.checked) {
+                                    checked = true;
+                                }
+                            });
+                            if (!checked) {
+                                event.preventDefault();
+                                alert('Please select at least one equipment.');
+                            }
+                        });
                     .form-group
                         label(for="startDate") Start Date:
                         input#startDate.form-control(type="date", name="startDate", required, min=new Date().toISOString().split('T')[0], value=new Date().toISOString().split('T')[0])
@@ -52,23 +67,42 @@ block content
                             });
 
                             function checkRentalDuration() {
-                                const startDate = new Date(startDateInput.value);
-                                const endDate = new Date(endDateInput.value);
+                                const startDateString = startDateInput.value;
+                                const endDateString = endDateInput.value;
+
+                                // Parse the input dates as UTC
+                                const startDate = new Date(Date.parse(startDateString + 'T00:00:00Z'));
+                                const endDate = new Date(Date.parse(endDateString + 'T00:00:00Z'));
+
+                                // Calculate difference in days
                                 const oneDay = 24 * 60 * 60 * 1000; // milliseconds in a day
                                 const diffDays = Math.round(Math.abs((startDate - endDate) / oneDay));
-                                const startDay = startDate.getDay(); // 0 for monday, 1 for tuesday, etc.
-                                const endDay = endDate.getDay();
-                                console.log(diffDays);
-                                console.log("startDay: " + startDay);
-                                console.log("endDay: " + endDay);
-                                if (diffDays > 1 && !(startDay === 4 && endDay === 0)) {
-                                    // Show message if rental spans more than 1 business day
-                                    startDateNotification.textContent = 'Please note that our standard rentals are for 1 business day. If you require a longer rental period, please provide a reason in the additional notes section. Refer to our policies for more information.';
+
+                                // Get day of the week (0 for Sunday, 1 for Monday, etc.)
+                                const startDay = startDate.getUTCDay();
+                                const endDay = endDate.getUTCDay();
+                                console.log(startDay);
+
+                                // Prevent selecting Saturdays and Sundays
+                                if (startDay === 6 || startDay === 0 || endDay === 6 || endDay === 0) {
+                                    startDateInput.value = ''; // Clear start date if it's a weekend
+                                    endDateInput.value = ''; // Clear end date if it's a weekend
+                                    startDateNotification.textContent = 'Weekends (Saturday and Sunday) are not selectable. Please choose a weekday.';
                                     startDateNotification.style.display = 'inline';
                                 } else {
-                                    // Clear message if rental duration is within 1 business day or spans a weekend
                                     startDateNotification.textContent = '';
                                     startDateNotification.style.display = 'none';
+
+                                    // Check rental duration only if it's not a weekend
+                                    if (diffDays > 1 && !(startDay === 5 && endDay === 1)) {
+                                        // Show message if rental spans more than 1 business day
+                                        startDateNotification.textContent = 'Please note that our standard rentals are for 1 business day. If you require a longer rental period, please provide a reason in the additional notes section. Refer to our policies for more information.';
+                                        startDateNotification.style.display = 'inline';
+                                    } else {
+                                        // Clear message if rental duration is within 1 business day or spans a weekend
+                                        startDateNotification.textContent = '';
+                                        startDateNotification.style.display = 'none';
+                                    }
                                 }
                             }
                     .form-group

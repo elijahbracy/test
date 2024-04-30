@@ -1,7 +1,8 @@
 const db = require('../db');
 const knex = require('../config/knexfile');
 const router = require('express').Router();
-const moment = require('moment')
+const moment = require('moment');
+const sgMail = require('@sendgrid/mail');
 
 // Middleware function to check if the user is authenticated and has the appropriate role
 const roleCheck = (requiredRole) => {
@@ -123,6 +124,10 @@ router.get('/rentals/:id', roleCheck('admin'), async(req, res) => {
         const rental = await db.getRentalById(req.params.id);
         console.log(rental);
 
+        const formattedRental = {...rental}
+        formattedRental.rental_start_date = moment(rental.rental_start_date).format('YYYY-MM-DD');
+        formattedRental.rental_end_date = moment(rental.rental_end_date).format('YYYY-MM-DD');
+
         const equipment = await db.getEquipmentByRental(req.params.id);
         console.log('equipment: ', equipment);
 
@@ -142,7 +147,7 @@ router.get('/rentals/:id', roleCheck('admin'), async(req, res) => {
             };
         });
         console.log('checkEquipment: ', checkedEquipment)
-        res.render('adminRental', {user: user, rental: rental, equipment: equipment, availableEquipment: availableEquipment, checkedEquipment: checkedEquipment});
+        res.render('adminRental', {user: user, rental: formattedRental, equipment: equipment, availableEquipment: availableEquipment, checkedEquipment: checkedEquipment});
     } catch (err) {
         console.error("Error getting rental:", err);
         res.status(500).send('Internal Server Error');
@@ -150,25 +155,88 @@ router.get('/rentals/:id', roleCheck('admin'), async(req, res) => {
 });
 
 router.post('/rentals/:id', roleCheck('admin'), async(req, res) => {
+    console.log('req body: ', req.body);
     try {
+        // Extract form data from request body
+        const { user_email, user_first, user_last, staff_notes, rental_id, start_date, end_date, equipment, status, notes, course} = req.body;
+        console.log('form rental id: ', rental_id);
+        // Update rental entry in the database
+        await db.updateRental(rental_id, start_date, end_date, equipment, status, notes, course);
 
-        console.log(req.body);
-        console.log(rental);
-        // Extract equipment data from the request body
-        //const { name, quantity } = req.body;
+        let equipmentNames = [];
+        // Fetch equipment names if equipment is associated with the rental
+        if (equipment.length > 0) {
+            equipmentNames = await db.getEquipmentByRental(rental_id);
+        }
         
-        // // Call the function to add equipment to the database
-        // const equipment_id = await db.addEquipment(name, quantity);
-        // console.log('equipment_id', equipment_id);
-        // // add same amount to available
-        // await db.addAvailability(equipment_id, quantity);
+
+        // email user if rental approved
+        if (status === 'approved') {
+            try {
+                const msg = {
+                    to: user_email, // change this to pauls for now
+                    from: 'ebracy@ramapo.edu', // Change to your verified sender
+                    subject: 'Rental Request Approved',
+                    html: `
+                        <p>Hello ${user_first},</p>
+                        <p>Your rental has been approved.</p>
+                        <p>Rental Information:</p>
+                        <ul>
+                            <li>Name: ${user_first} ${user_last}</li>
+                            <li>Email: ${user_email}</li>
+                            <li>Selected Equipment: ${equipmentNames.join(', ')}</li>
+                            <li>Course: ${course}</li>
+                            <li>Notes: ${notes}</li>
+                        </ul>
+                        <p>Please come to The Cage located at H-117 during our business hours to pick up your rental.</p>
+                        <p>Business Hours: Mon-Fri 9:30am-4:30pm</p>
+                        <p>Thank you, The Cage Team</p>`
+                };
+                await sgMail.send(msg);
+                //res.send('Test email sent successfully.');
+            } catch (error) {
+                console.error(error);
+                res.status(500).send('Error sending staff request recieved notification email.');
+            }
+        }
+
+        // email user if rental approved
+        if (status === 'denied') {
+            try {
+                const msg = {
+                    to: user_email, // change this to pauls for now
+                    from: 'ebracy@ramapo.edu', // Change to your verified sender
+                    subject: 'Rental Request Denied',
+                    html: `
+                        <p>Hello ${user_first},</p>
+                        <p>Your rental has been denied for the following reason(s):</p>
+                        <p>${staff_notes}</p>
+                        <p>Rental Information:</p>
+                        <ul>
+                            <li>Name: ${user_first} ${user_last}</li>
+                            <li>Email: ${user_email}</li>
+                            <li>Selected Equipment: ${equipmentNames.join(', ')}</li>
+                            <li>Course: ${course}</li>
+                            <li>Notes: ${notes}</li>
+                        </ul>
+                        <p>Please address the issue(s) in your rental request and resubmit. Contact us if you have any questions.</p>
+                        <p>Thank you, The Cage Team</p>
+                    `
+                };
+                await sgMail.send(msg);
+                //res.send('Test email sent successfully.');
+            } catch (error) {
+                console.error(error);
+                res.status(500).send('Error sending staff request recieved notification email.');
+            }
+        }
         
-        // Send a success response
-        //res.status(200).send('Equipment added successfully');
-    } catch (err) {
-        console.error("Error editing rental:", err);
+        // Redirect to a success page or send a success response
+        //res.redirect('/rental-updated');
+      } catch (error) {
+        console.error('Error updating rental:', error);
         res.status(500).send('Internal Server Error');
-    }
+      }
 });
 
 
@@ -188,6 +256,33 @@ router.get('/getAllRentals', roleCheck('admin'), async(req, res) => {
         }
         console.log(rentalsWithEquipment);
         res.status(200).json({rentalsWithEquipment});
+    } catch (err) {
+        console.error("Error retrieving rentals:", err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+router.get('/getRentals', roleCheck('admin'), async (req, res) => {
+    try {
+        // Extract pagination parameters from the request query
+        const { page = 1, pageSize = 10 } = req.query;
+
+        // Calculate the offset based on the current page and page size
+        const offset = (page - 1) * pageSize;
+
+        // Retrieve rentals from the database using pagination
+        const rentals = await db.getRentals(offset, pageSize);
+        const rentalsWithEquipment = [];
+
+        for (const rental of rentals) {
+            const equipment = await db.getEquipmentByRental(rental.rental_id);
+            const formattedRental = { ...rental, equipment };
+            formattedRental.rental_start_date = moment(rental.rental_start_date).format('YYYY-MM-DD');
+            formattedRental.rental_end_date = moment(rental.rental_end_date).format('YYYY-MM-DD');
+            rentalsWithEquipment.push(formattedRental);
+        }
+
+        res.status(200).json({ rentalsWithEquipment });
     } catch (err) {
         console.error("Error retrieving rentals:", err);
         res.status(500).send('Internal Server Error');

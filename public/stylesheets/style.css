@@ -1,6 +1,6 @@
 /* style.css */
 .bg-maroon {
-    background-color: maroon;
+    background-color: #862632;
 }
 
 /* Add this CSS to your stylesheet */
@@ -12,4 +12,10 @@
 ul#equipmentList {
     list-style-type: none;
     padding-left: 0;
+}
+
+
+.resizable-image {
+    max-width: 75%; /* Limits the maximum width of the image to its container width */
+    max-height: 75%; /* Limits the maximum height of the image to its container height */
 }

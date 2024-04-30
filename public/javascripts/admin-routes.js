@@ -129,6 +129,36 @@ const getAllRentals = async () => {
     createRentalTable(response.data);
 }
 
+// Pagination parameters
+let currentPage = 1;
+const pageSize = 10; // Number of rentals per page
+
+const fetchRentals = async () => {
+
+    const response = await axios.get(`/admin/getRentals?page=${currentPage}&pageSize=${pageSize}`);
+    await createRentalTable(response.data);
+
+    // Enable/disable pagination buttons based on current page
+    document.getElementById('prevPageButton').disabled = currentPage === 1;
+    document.getElementById('nextPageButton').disabled = response.data.rentalsWithEquipment.length < pageSize;
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('prevPageButton').addEventListener('click', () => {
+        if (currentPage > 1) {
+            currentPage--;
+            fetchRentals();
+        }
+    });
+    
+    document.getElementById('nextPageButton').addEventListener('click', () => {
+        currentPage++;
+        fetchRentals();
+    });
+});
+
+
+
 const createRentalTable = async (rentals) => {
     // get table body
     const tbody = document.querySelector('tbody');

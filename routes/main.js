@@ -2,12 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { google } = require('googleapis');
 require('dotenv').config();
-
 // Require for sendgrid
 const sgMail = require('@sendgrid/mail');
-
-// Set SendGrid API key
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const NodeCache = require('node-cache');
 const cache = new NodeCache({ stdTTL: 3600 }); // Cache TTL set to 1 hour
@@ -35,6 +31,7 @@ async function fetchYouTubeVideos() {
             .map(item => ({
                 title: item.snippet.title,
                 url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+                id: item.id.videoId,
                 thumbnailUrl: item.snippet.thumbnails.default.url
             }));
 
@@ -59,6 +56,7 @@ router.get('/', async (req, res) => {
         res.render('main', { videos: videos, user: req.user });
         console.log(req.user);
         //res.render('main', { videos: [], user: req.user });
+        console.log(videos);
     } catch (error) {
         console.error('Error rendering main page:', error);
         res.render('main', { videos: [], user: req.user, error: error });
@@ -68,12 +66,19 @@ router.get('/', async (req, res) => {
 router.get('/send-test-email', async (req, res) => {
     try {
         const msg = {
-            to: 'ppittman@ramapo.edu', // Change to your recipient
+            to: 'ebracy@ramapo.edu', // Change to your recipient
             from: 'ebracy@ramapo.edu', // Change to your verified sender
             subject: 'Sent AUTOMATICALLY',
-            text: 'FROM THE BEST AIDE IN THE GAME',
-            html: '<strong>FROM THE BEST AIDE IN THE GAME</strong>',
-        };
+            html: `
+                <p>Hello ${firstName} ${lastName},</p>
+                <p>Thank you for submitting your rental request. We have received your request and will review it shortly.</p>
+                <p>Selected Equipment:</p>
+                <ul>
+                    ${equipmentNames.map(name => `<li>${name}</li>`).join('')}
+                </ul>
+                <p>You will receive another email once your request has been reviewed and processed.</p>
+                <p>Best regards,<br>The Cage Team</p>`
+            };
 
         await sgMail.send(msg);
         res.send('Test email sent successfully.');

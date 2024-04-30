@@ -3,21 +3,6 @@ const knex = require('../config/knexfile');
 const router = require('express').Router();
 const sgMail = require('@sendgrid/mail');
 
-// admin-routes.js
-
-// Define formatDate function
-function formatDate(dateString) {
-    if (!dateString) return ''; // Return empty string if dateString is not provided
-    const date = new Date(dateString);
-    const year = date.getFullYear();
-    let month = (date.getMonth() + 1).toString();
-    let day = date.getDate().toString();
-    if (month.length === 1) month = '0' + month; // Add leading zero if month is single digit
-    if (day.length === 1) day = '0' + day; // Add leading zero if day is single digit
-    return `${year}-${month}-${day}`;
-}
-
-
 // middleware function to check if the user is authenticated
 const authCheck = (req, res, next) => {
     if (!req.user) {
@@ -80,23 +65,58 @@ router.post('/', authCheck, async (req, res) => {
             await db.insertRentalEquipment(result.rental_id, equipmentId);
         }
 
+        const equipmentNames = await db.getEquipmentByRental(result.rental_id);
+        console.log(equipmentNames);
+
         // send confirmation email
         try {
             const msg = {
-                to: email, // Change to the user's email address
-                from: 'ebracy@ramapo.edu', // Change to your verified sender
+                to: email, 
+                from: 'ebracy@ramapo.edu',
                 subject: 'Rental Request Received',
-                text: `Hello ${firstName} ${lastName},\n\n
-                Thank you for submitting your rental request. We have received your request and will review it shortly.\n\n
-                Selected Equipment: ${equipment.join(', ')}\n\n
-                You will receive another email once your request has been reviewed and processed.\n\n
-                Best regards,\nThe Rental Team`,
+                html: `
+                <p>Hello ${firstName} ${lastName},</p>
+                <p>Thank you for submitting your rental request. We have received your request and will review it shortly.</p>
+                <p>Selected Equipment:</p>
+                <ul>
+                    ${equipmentNames.map(name => `<li>${name}</li>`).join('')}
+                </ul>
+                <p>You will receive another email once your request has been reviewed and processed.</p>
+                <p>Best regards,<br>The Cage Team</p>
+                `
             };
             await sgMail.send(msg);
             //res.send('Test email sent successfully.');
         } catch (error) {
             console.error(error);
-            res.status(500).send('Error sending test email.');
+            res.status(500).send('Error sending student request recieved email.');
+        }
+
+        // send staff notification email
+        try {
+            const msg = {
+                to: 'ebracy@ramapo.edu', // change this to pauls for now
+                from: 'ebracy@ramapo.edu', // verified sender
+                subject: 'Rental Request Received',
+                html: `
+                    <p>Hello,</p>
+                    <p>A new rental request has just been received.</p>
+                    <p>Rental Information:</p>
+                    <ul>
+                        <li>Name: ${firstName} ${lastName}</li>
+                        <li>Email: ${email}</li>
+                        <li>Selected Equipment: ${equipmentNames.join(', ')}</li>
+                        <li>Course: ${course}</li>
+                        <li>Notes: ${notes}</li>
+                    </ul>
+                    <p>Please review the request and process it accordingly.</p>
+                `
+            };
+            await sgMail.send(msg);
+            //res.send('Test email sent successfully.');
+        } catch (error) {
+            console.error(error);
+            res.status(500).send('Error sending staff request recieved notification email.');
         }
 
         // Redirect to a success page or return a success response
