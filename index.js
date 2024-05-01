@@ -75,7 +75,7 @@ app.use('/', require('./routes/main'));
 
 
 // scheduled tasks
-//const reminderEmailTask = require('./scheduledTasks/reminderEmail');
+const reminderEmailTask = require('./scheduledTasks/reminderEmail');
 
 
 // Use the PORT environment variable if available, otherwise use port 3000

@@ -3,7 +3,7 @@ const sgMail = require('@sendgrid/mail');
 const db = require('../db'); // Import your database library
 
 // Schedule a task to run daily at 8am
-const reminderEmailTask = cron.schedule('*/5 * * * * *', async () => { // minute, hour, day of month, month, day of week
+const reminderEmailTask = cron.schedule('0 8 * * *', async () => { // minute, hour, day of month, month, day of week
     try {
         console.log('Scheduled task started');
         // Get rentals due today from the database
