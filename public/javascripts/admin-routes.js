@@ -50,32 +50,142 @@ const loadEquipment = async () => {
     if (response && response.data && response.data.equipment) {
         for (const equipment of response.data.equipment) {
             const tr = document.createElement('tr');
+            tr.dataset.id = equipment.equipment_id;
+            const editButton = document.createElement('button');
+            editButton.classList.add('btn', 'btn-warning');
+            editButton.textContent = 'Edit';
+            editButton.addEventListener('click', () => openEditEquipmentModal(equipment.equipment_id));
+            const deleteButton = document.createElement('button');
+            deleteButton.classList.add('btn', 'btn-danger');
+            deleteButton.textContent = 'Delete';
+            deleteButton.addEventListener('click', () => onDeleteButtonClick(equipment.equipment_id));
             tr.innerHTML = `
                 <td>${equipment.name}</td>
                 <td>${equipment.quantity}</td>
                 <td>${equipment.available_quantity ? equipment.available_quantity : 0}</td>
-                <td>
-                    <button class='btn btn-warning' onclick= 'editEquipment(${equipment.equipment_id})'>Edit</button>
-                </td>
-                <td>
-                    <button class='btn btn-danger' onclick= 'deleteEquipment(${equipment.equipment_id})'>Delete</button>
-                </td>
+                <td></td> <!-- Placeholder for Edit button -->
+                <td></td> <!-- Placeholder for Delete button -->
             `;
+            tr.appendChild(editButton);
+            tr.appendChild(deleteButton);
             tbody.appendChild(tr);
         }
     }
 }
 
+const openEditEquipmentModal = (equipment_id) => {
+    const modal = document.getElementById('editEquipmentModal');
+    const backdrop = document.createElement('div');
+    backdrop.classList.add('modal-backdrop', 'fade', 'show');
+    document.body.appendChild(backdrop);
+    modal.classList.add('show');
+    modal.style.display = 'block';
+    document.body.classList.add('modal-open');
 
-const editEquipment = async (id) => {
-    await axios.post(`/admin/equipment/${id}`);
-    await loadEquipment();
+    // Populate modal with existing equipment details for editing
+    const row = document.querySelector(`tr[data-id="${equipment_id}"]`);
+    const name = row.querySelector('td:first-child').textContent;
+    const quantity = row.querySelector('td:nth-child(2)').textContent;
+    const available = row.querySelector('td:nth-child(3)').textContent; // Assuming the available quantity is in the third column
+
+    document.getElementById('editEquipmentId').value = equipment_id; // Set equipment_id value
+    document.getElementById('editEquipmentName').value = name;
+    document.getElementById('editEquipmentQuantity').value = quantity;
+    document.getElementById('editEquipmentAvailable').value = available;
 }
 
-const deleteEquipment = async (equipmentId) => {
+
+const saveEditEquipment = async () => {
+    const equipment_id = document.getElementById('editEquipmentId').value;
+    const name = document.getElementById('editEquipmentName').value;
+    const quantity = document.getElementById('editEquipmentQuantity').value;
+    const available = document.getElementById('editEquipmentAvailable').value;
+
+    try {
+        // Make a PUT request to update equipment
+        await axios.put(`/admin/equipment/${equipment_id}`, { name, quantity, available });
+        
+        // Reload equipment list after editing
+        await loadEquipment();
+        
+        // Close the modal
+        closeEditEquipmentModal();
+    } catch (error) {
+        console.error('Error editing equipment:', error);
+        // Handle error if needed
+    }
+}
+
+
+function closeEditEquipmentModal() {
+    const modal = document.getElementById('editEquipmentModal');
+    const backdrop = document.querySelector('.modal-backdrop');
+    modal.classList.remove('show');
+    modal.style.display = 'none';
+    document.body.classList.remove('modal-open');
+    backdrop.parentNode.removeChild(backdrop);
+}
+
+
+const onEditButtonClick = (equipment_id) => {
+    const row = document.querySelector(`tr[data-id="${equipment_id}"]`);
+    const [name, quantity, available] = row.querySelectorAll('td');
+    name.innerHTML = `<input type="text" name="name" value="${name.textContent}">`;
+    quantity.innerHTML = `<input type="number" name="quantity" value="${quantity.textContent}">`;
+    available.innerHTML = `<input type="number" name="available" value="${available.textContent}">`;
+    const editButton = row.querySelector('.btn-warning');
+    editButton.textContent = 'Save';
+    editButton.removeEventListener('click', onEditButtonClick);
+    editButton.addEventListener('click', () => onSaveButtonClick(equipment_id, row));
+    console.log('edit btn clicked');
+};
+
+const onSaveButtonClick = async (equipment_id, row) => {
+    event.preventDefault();
+    const nameInput = document.getElementsByName('name');
+    const quantityInput = row.querySelector('input[name="quantity"]');
+    const availableInput = row.querySelector('input[name="available"]');
+
+    console.log('name input', nameInput); // Check if the input field is correctly selected
+    console.log('name value', nameInput.value); // Check the value of the input field
+
+    const name = nameInput.value;
+    const quantity = quantityInput.value;
+    const available = availableInput.value;
+
+    console.log('name', name); // Check the value of the 'name' variable
+    // Send data to server to update equipment details
+    try {
+        const response = await axios.put(`/admin/equipment/${equipment_id}`, { name, quantity, available });
+        if (response && response.status === 200) {
+            // Update row with new data
+            row.innerHTML = `
+                <td>${name}</td>
+                <td>${quantity}</td>
+                <td>${available}</td>
+            `;
+            const editButton = document.createElement('button');
+            editButton.classList.add('btn', 'btn-warning');
+            editButton.textContent = 'Edit';
+            editButton.addEventListener('click', () => onEditButtonClick(equipment_id));
+            const deleteButton = document.createElement('button');
+            deleteButton.classList.add('btn', 'btn-danger');
+            deleteButton.textContent = 'Delete';
+            deleteButton.addEventListener('click', () => onDeleteButtonClick(equipment_id));
+            row.appendChild(editButton);
+            row.appendChild(deleteButton);
+        }
+    } catch (error) {
+        console.error('Error updating equipment js:', error);
+    }
+};
+
+const onDeleteButtonClick = async (equipment_id) => {
+    // Handle delete functionality
     await axios.delete(`/admin/equipment/${equipmentId}`);
     await loadEquipment();
-}
+};
+
 
 const openAddEquipmentModal = () => {
     const modal = document.getElementById('addEquipmentModal');

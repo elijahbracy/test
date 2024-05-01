@@ -385,6 +385,31 @@ class CageDB {
         }
     }
 
+    async editEquipment(equipment_id, name, quantity, available_quantity) {
+        try {
+            // Update equipment details in the equipment table
+            await knex('Equipment')
+                .where('equipment_id', equipment_id)
+                .update({
+                    name: name,
+                    quantity: quantity
+                });
+    
+            // Update available_quantity in the availability table
+            await knex('Availability')
+                .where('equipment_id', equipment_id)
+                .update({
+                    available_quantity: available_quantity
+                });
+    
+            return true; // Indicates successful update
+        } catch (error) {
+            console.error('Error updating equipment:', error);
+            throw error; // Rethrow the error to the caller
+        }
+    }
+    
+
 }
 
 const db = new CageDB();

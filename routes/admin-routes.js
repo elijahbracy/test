@@ -105,8 +105,19 @@ router.delete('/equipment/:id', roleCheck('admin'), async (req, res) => {
     }
 });
 
-router.post('/equipment/:id', roleCheck('admin'), async(req, res) => {
-
+router.put('/equipment/:id', roleCheck('admin'), async(req, res) => {
+    try {
+        const id = req.params.id;
+        console.log('parasm', req.params.id);
+        const { name, quantity, available} = req.body;
+        console.log(id, name, quantity, available);
+        console.log('body', req.body);
+        await db.editEquipment(id, name, quantity, available);  
+        res.status(200).send('Equipment updated successfully');
+    } catch (err) {
+        console.error("Error editing equipment:", err);
+        res.status(500).send('Internal Server Error');
+    } 
 });
 
 router.get('/rentals', roleCheck('admin'), async(req, res) => {
