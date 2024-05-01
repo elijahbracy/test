@@ -21,10 +21,11 @@ block content
         .row
             if videos.length
                 each video in videos
-                    .col-4
+                    .col-12.col-md-6.col-lg-4
                         a(href=video.url)
-                            // Embed YouTube video
-                            iframe(src=`https://www.youtube.com/embed/${video.id}`, frameborder="0", allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture", allowfullscreen)
+                            // Embed YouTube video with responsive aspect ratio
+                            .embed-responsive.embed-responsive-16by9
+                                iframe.embed-responsive-item(src=`https://www.youtube.com/embed/${video.id}`, allowfullscreen="")
                             p= video.title
             else 
                 p Check out our youtube channel!
