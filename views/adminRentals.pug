@@ -3,7 +3,7 @@ extends layout.pug
 block content
     script(src="/javascripts/admin-routes.js")
     h1 Rentals
-    button#allRentalsButton(type="button") All Rentals 
+    button.btn.btn-primary#allRentalsButton(type="button") All Rentals 
     
     table.table.table-striped#rentalsTable 
         thead 
@@ -22,5 +22,5 @@ block content
                 
     // Pagination buttons
     div.pagination-buttons
-        button#prevPageButton(type="button" disabled) Previous
-        button#nextPageButton(type="button") Next
+        button.btn.btn-primary#prevPageButton(type="button" disabled) Previous
+        button.btn.btn-primary#nextPageButton(type="button") Next

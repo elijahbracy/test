@@ -335,6 +335,7 @@ class CageDB {
         try {
             const rentals = await knex('Rentals')
                 .select('Rentals.*', 'Users.first_name', 'Users.last_name')
+                .orderBy('rental_id', 'desc')
                 .innerJoin('Users', 'Rentals.user_id', 'Users.user_id')
                 .offset(offset)
                 .limit(pageSize);

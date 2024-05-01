@@ -241,7 +241,7 @@ router.post('/rentals/:id', roleCheck('admin'), async(req, res) => {
 
 router.get('/rental-updated', roleCheck('admin'), async(req, res) => {
     try {
-        res.render('rentalUpdateSuccess');
+        res.render('rentalUpdateSuccess', {user: req.user});
     } catch (err) {
         console.error('Error updating rental:', err);
         res.status(500).send('Internal Server Error');
