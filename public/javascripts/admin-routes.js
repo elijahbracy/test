@@ -173,6 +173,7 @@ const createRentalTable = async (rentals) => {
         // Add a click event listener to each row
         tr.dataset.id = rental.rental_id;
         tr.addEventListener('click', onRowClick);
+        tr.classList.add('clickable');
         tr.innerHTML = `
         <td>${rental.first_name} ${rental.last_name}</td>
         <td>${rental.equipment}</td>

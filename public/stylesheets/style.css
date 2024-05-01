@@ -19,3 +19,11 @@ ul#equipmentList {
     max-width: 75%; /* Limits the maximum width of the image to its container width */
     max-height: 75%; /* Limits the maximum height of the image to its container height */
 }
+
+.clickable {
+    cursor: pointer;
+}
+
+.clickable:hover {
+    background-color: #f0f0f0;
+}
