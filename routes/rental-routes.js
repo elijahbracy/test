@@ -2,6 +2,7 @@ const db = require('../db');
 const knex = require('../config/knexfile');
 const router = require('express').Router();
 const sgMail = require('@sendgrid/mail');
+const moment = require('moment');
 
 // middleware function to check if the user is authenticated
 const authCheck = (req, res, next) => {
@@ -38,8 +39,8 @@ router.post('/', authCheck, async (req, res) => {
         console.log("user:", user);
 
         // change dates to proper format
-        const startDateFinal = formatDate(startDate);
-        const endDateFinal = formatDate(endDate);
+        const startDateFinal = moment(startDate).format('YYYY-MM-DD');
+        const endDateFinal = moment(endDate).format('YYYY-MM-DD');
 
         // Log the form data
         console.log('First Name:', firstName);

@@ -232,11 +232,20 @@ router.post('/rentals/:id', roleCheck('admin'), async(req, res) => {
         }
         
         // Redirect to a success page or send a success response
-        //res.redirect('/rental-updated');
+        res.redirect('/admin/rental-updated');
       } catch (error) {
         console.error('Error updating rental:', error);
         res.status(500).send('Internal Server Error');
       }
+});
+
+router.get('/rental-updated', roleCheck('admin'), async(req, res) => {
+    try {
+        res.render('rentalUpdateSuccess');
+    } catch (err) {
+        console.error('Error updating rental:', err);
+        res.status(500).send('Internal Server Error');
+    }
 });
 
 
