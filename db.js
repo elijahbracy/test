@@ -352,6 +352,9 @@ class CageDB {
 
             console.log('rentalID:', rental_id);
             // Update rental information in the rentals table
+
+            
+
             await knex('Rentals')
                 .where({ rental_id })
                 .update({ rental_start_date: start_date, rental_end_date: end_date, rental_status: status, notes: notes, course: course });
@@ -363,7 +366,7 @@ class CageDB {
                 .del();
     
             // Then, insert the updated equipment list
-            const equipmentIds = equipment; // Assuming equipment is an array of equipment IDs
+            const equipmentIds = Array.isArray(equipment) ? equipment : [equipment];
             await knex('RentalEquipment').insert(equipmentIds.map(equipment_id => ({ rental_id, equipment_id })));
     
             return true; // Return true if the update was successful
